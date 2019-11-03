@@ -1,16 +1,31 @@
 function buildMetadata(sample) {
-
   // @TODO: Complete the following function that builds the metadata panel
-
   // Use `d3.json` to fetch the metadata for a sample
     // Use d3 to select the panel with id of `#sample-metadata`
-    async function getData(data_index) {
-      console.log(data_index);
-      let data = await d3.json(`/metadata/${data_index}`);
-      updatePlotly(data);
-      console.log(data)
+  async function getData(data_index) {
+    let data = await d3.json(`/metadata/${data_index}`);
+    let metadata = d3.select('#sample-metadata')
+      metadata.html('');
+    for (i in data){
+      metadata.append('p').text(i + ': ' + data[i]);
     }
-    getData(sample)
+  }
+  getData(sample)
+  async function updatePlotly(data_index){
+    let pie_data = await d3.json(`/samples/${data_index}`)
+    let dataset = [{values: pie_data['sample_values'].slice(0,10), labels: pie_data['otu_ids'].slice(0,10), 
+                    hovertext: pie_data['otu_labels'].slice(0,10),type: 'pie'}];
+    let layout = {title: "pie chart"};
+    Plotly.newPlot('pie', dataset, layout);
+    let bubble_data = pie_data;
+    let bubble_dataset = [{x: bubble_data['otu_ids'], y: bubble_data['sample_values'],
+                          mode: 'markers', marker: {size: bubble_data['sample_values'], 
+                          color: bubble_data['otu_ids']}, text: bubble_data['otu_labels']}];
+    let bubble_layout = {title: 'bubble chart'};
+    Plotly.newPlot('bubble', bubble_dataset, bubble_layout)
+    console.log(dataset)
+  }
+  updatePlotly(sample)
     // Use `.html("") to clear any existing metadata
 
     // Use `Object.entries` to add each key and value pair to the panel
@@ -49,14 +64,12 @@ function init() {
     const firstSample = sampleNames[0];
     buildCharts(firstSample);
     buildMetadata(firstSample);
-    console.log(2);
   });
 }
 
 function optionChanged(newSample) {
   // Fetch new data each time a new sample is selected
   buildCharts(newSample);
-  console.log(1);
   buildMetadata(newSample);
 }
 
