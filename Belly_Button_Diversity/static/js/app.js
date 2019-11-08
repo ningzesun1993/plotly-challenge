@@ -1,3 +1,41 @@
+function make_gauge(set_value){
+  //Enter a level between 1 and 9
+  var level = set_value;
+  // Trig to calc meter point
+  var degrees = 90 - (level)*10;
+  let radius = .7;
+  var radians = degrees * Math.PI / 90;
+  var x = radius * Math.cos(radians);
+  var y = radius * Math.sin(radians);
+  // Path: may have to change to create a better triangle
+  var mainPath = 'M -.0 -0.035 L .0 0.035 L ',
+      pathX = String(x),
+      space = ' ',
+      pathY = String(y),
+      pathEnd = ' Z';
+  var path = mainPath.concat(pathX,space,pathY,pathEnd);
+  var data = [{ type: 'category', x: [0], y:[0], marker: {size: 28, color:'850000'}, 
+              showlegend: false, name: 'speed', text: level, hoverinfo: 'text+name'},
+    { values: [1,1,1,1,1,1,1,1,1,9], rotation: 90, 
+      text: ['8-9', '7-8', '6-7', '5-6', '4-5',  '3-4', '2-3', '1-2', '0-1',''], 
+      textinfo: 'text', textposition:'inside',      
+      marker: 
+      {colors:['#84B589', '#89BC8D', '#8BC086', '#B7CD8F', '#D5E599', 
+                '#E5E8B0', '#E9E7C9', '#E9E7C9', '#F8F3EC','rgba(255,255,255,0)']},
+      labels: ['8-9', '7-8', '6-7', '5-6', '4-5',  '3-4', '2-3', '1-2', '0-1'],
+      hoverinfo: 'label', hole: .5, type: 'pie', showlegend: false
+  }];
+
+  var layout = {
+    shapes:[{type: 'path', path: path, fillcolor: '850000', line: {color: '850000'}}],
+    title: 'Maturity Total Score 1-5', height: 500, width: 600,
+    xaxis: {type:'category',zeroline:false, showticklabels:false, showgrid: false, range: [-1, 1]},
+    yaxis: {type:'category',zeroline:false, showticklabels:false, showgrid: false, range: [-1, 1]}
+  };
+
+  Plotly.newPlot('gauge', data, layout);
+}
+
 function buildMetadata(sample) {
   // @TODO: Complete the following function that builds the metadata panel
   // Use `d3.json` to fetch the metadata for a sample
@@ -9,6 +47,8 @@ function buildMetadata(sample) {
     for (i in data){
       metadata.append('p').text(i + ': ' + data[i]);
     }
+    make_gauge(data['WFREQ']);
+    console.log(data)
   }
   getData(sample)
   async function updatePlotly(data_index){
@@ -23,7 +63,7 @@ function buildMetadata(sample) {
                           color: bubble_data['otu_ids']}, text: bubble_data['otu_labels']}];
     let bubble_layout = {title: 'bubble chart'};
     Plotly.newPlot('bubble', bubble_dataset, bubble_layout)
-    console.log(dataset)
+    // console.log(dataset)
   }
   updatePlotly(sample)
     // Use `.html("") to clear any existing metadata
